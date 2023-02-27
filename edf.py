@@ -4,7 +4,7 @@ This script loads the first .edf file from the train set for inspection.
 
 import mne 
 
-path = '/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/train/aaaaaaac/s001_2002_12_23/02_tcp_le/aaaaaaac_s001_t000.edf'
+path = '/Volumes/KINGSTON/TUSZ_V2/edf/train/aaaaaaac/s001_2002_12_23/02_tcp_le/aaaaaaac_s001_t000.edf'
 
 data = mne.io.read_raw_edf(path, infer_types=True) 
 raw_data = data.get_data()
