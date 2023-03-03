@@ -2,6 +2,7 @@
 This script iterates through a data set (taken as argument) and prints:
 1. the different sampling frequencies along with the corresponding occurence count
 2. the low and high pass filters 
+3. the electrode positions used 
 Script may be extended to create a list of usable files i.e. files that share the same
 sampling rate or a multiple of.
 """
@@ -18,7 +19,7 @@ argParser = argparse.ArgumentParser()
 argParser.add_argument("-s", "--set", type=str, help="specify the data set of interest")
 args = argParser.parse_args()
 
-path = '/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/' + args.set
+path = '/Volumes/KINGSTON/TUSZ_V2/edf/' + args.set
 
 s_freqs = []      #empty list of sample frequencies
 lowpass_list = []       #empty list of lowpass filters

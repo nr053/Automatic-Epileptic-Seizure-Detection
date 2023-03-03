@@ -8,12 +8,13 @@ import glob
 import pandas as pd
 import argparse
 import os
+from path import Path
 
 argParser = argparse.ArgumentParser()
 argParser.add_argument("-s", "--set", type=str, help="the set on which the operation should be performed")
 args = argParser.parse_args()
 
-path = os.getcwd() + '/TUSZ_V2/edf/' + args.set #set path
+path = Path.ext_path + args.set #set path
 total_seizure_duration = 0
 total_duration = 0
 
