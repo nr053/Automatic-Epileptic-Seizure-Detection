@@ -1,6 +1,6 @@
 """
 This script iterates through a data set (taken as argument) and prints:
-1. the different sampling frequencies along with the corresponding occurence count
+1. the different sampling frequencies along with the corresponding occurrence count
 2. the low and high pass filters 
 3. the electrode positions used 
 Script may be extended to create a list of usable files i.e. files that share the same
@@ -13,13 +13,21 @@ import os
 import argparse
 import glob
 from collections import Counter
-
+from path import Path
 
 argParser = argparse.ArgumentParser()
-argParser.add_argument("-s", "--set", type=str, help="specify the data set of interest")
+argParser.add_argument("-s", "--set", type=str,
+                        default="",
+                        help="specify the data set of interest")
+argParser.add_argument("-p", "--path", type=str, 
+                       choices=["local", "ext"],
+                       help="the path location of the parent directory (machine/ext hard drive)")
 args = argParser.parse_args()
 
-path = '/Volumes/KINGSTON/TUSZ_V2/edf/' + args.set
+if args.path == "local":
+      path = Path.machine_path + args.set
+else:
+      path = Path.ext_path + args.set
 
 s_freqs = []      #empty list of sample frequencies
 lowpass_list = []       #empty list of lowpass filters

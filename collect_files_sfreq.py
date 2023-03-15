@@ -10,8 +10,14 @@ import argparse
 from path import Path
 
 argParser = argparse.ArgumentParser()
-argParser.add_argument("-s", "--set", type=str, help="the set of interest e.g. train/dev/eval")
-argParser.add_argument("-l", "--folder_location", choices=['external','local'],type=str,help="use local or external storage")
+argParser.add_argument("-s", "--set", 
+                       default="", 
+                       type=str, 
+                       help="the set of interest e.g. train/dev/eval")
+argParser.add_argument("-l", "--folder_location", 
+                       choices=['ext','local'],
+                       type=str,
+                       help="use local or external storage")
 args = argParser.parse_args()
 
 if args.folder_location == "local":
@@ -22,7 +28,7 @@ else:
 
 counter = 0
 file_list = []
-list_file = open('file_list.txt', 'w')
+list_file = open('file_list.txt' , 'w')
 
 for f in glob.glob(path + '/**/*.edf', recursive=True):
     data = mne.io.read_raw_edf(f, infer_types=True)

@@ -1,8 +1,10 @@
+"""This script reads a .csv_bi file and prints the rows, and recording duration. """
+
 import csv
 
 path = '/Users/toucanfirm/Documents/DTU/Speciale'
 
-file = open(path + '/TUSZ/edf/train/aaaaaaac/s001_2002_12_23/02_tcp_le/aaaaaaac_s001_t000.csv_bi')
+file = open(path + '/TUSZ_V2/edf/train/aaaaaaac/s001_2002_12_23/02_tcp_le/aaaaaaac_s001_t000.csv_bi')
 csvreader = csv.reader(file)
 
 rows = []

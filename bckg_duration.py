@@ -1,4 +1,6 @@
 """
+This script prints the total duration of recordings, including their background/seizure duration.
+
 1. get *.csv_bi files
 2. sum seizure times
 3. remove from total duration
@@ -11,16 +13,26 @@ import os
 from path import Path
 
 argParser = argparse.ArgumentParser()
-argParser.add_argument("-s", "--set", type=str, help="the set on which the operation should be performed")
+argParser.add_argument("-s", "--set", default= "", type=str, 
+                       help="the set on which the operation should be performed")
+argParser.add_argument("-p", "--path", type=str, 
+                       choices=["local", "ext"],
+                       help="the path location of the parent directory (machine/ext hard drive)")
 args = argParser.parse_args()
 
-path = Path.ext_path + args.set #set path
+ext_path = Path.ext_path + args.set #set external path
+local_path = Path.machine_path + args.set #set local machine path
 total_seizure_duration = 0
 total_duration = 0
 
+if args.path == "local":
+    path = local_path
+else:
+    path = ext_path
+
 
 for f in glob.glob(path + '/**/*.csv_bi', recursive=True):  #iterate through all *.csv_bi files
-    print(f)    
+    #print(f)    
     file = open(f)  #open the file
     df_events = pd.read_csv(f, header=5)    #read events into a data frame
     df_duration = pd.read_csv(f, nrows=1, skiprows=2, names=['a'])  #read the file duration row into another dataframe
@@ -32,15 +44,14 @@ for f in glob.glob(path + '/**/*.csv_bi', recursive=True):  #iterate through all
     if df_events['label'].eq("seiz").any(): #if the event df contains a seizure
         df_events['duration'] = df_events['stop_time'] - df_events['start_time']    #add a seizure duration column
         seizure_duration = df_events['duration'].sum()  #sum the file seizure durations
-        print(df_events)
+        #print(df_events)
         #print("seizure duration = ", seizure_duration)  
         total_seizure_duration += seizure_duration  #add the file seizure duration to the total seizure time
 
 
 
-
-print("Total seizure duration: ", total_seizure_duration)
 print("Total duration: ", total_duration)
+print("Total seizure duration: ", total_seizure_duration)
 print("Total background duration: ", total_duration - total_seizure_duration)
 
 
