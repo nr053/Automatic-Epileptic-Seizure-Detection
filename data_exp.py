@@ -32,18 +32,18 @@ argParser.add_argument("-p", "--path", type=str,
 args = argParser.parse_args()
 
 if args.path == "local":
-    path = Path.machine_path + args.set + '/'
+    path = Path.machine_path + args.set 
 else:
-    path = Path.ext_path + args.set + '/'
+    path = Path.ext_path + args.set 
 
 
 def collect_files(path):
     """Collect a list of edf files and a list of csv files to calculate stats on"""
     edf_list = []
     csv_list = []
-    for f in glob.glob(path + '**/*.edf', recursive=True):
+    for f in glob.glob(path + '/**/*.edf', recursive=True):
         edf_list.append(f)
-    for f in glob.glob(path + '**/*.csv_bi', recursive=True):
+    for f in glob.glob(path + '/**/*.csv_bi', recursive=True):
         csv_list.append(f)
     
     return edf_list, csv_list
@@ -87,14 +87,47 @@ def calculate_durations(csv_list):
     return  total_duration, total_seizure_duration
 
 def sfreq_subset(edf_list):
+    """Takes a list of edf files and returns:
+
+    1. list of records sampled at 256/512Hz
+    2. list of records sampled at 256/512Hz containing aurical channels 
+    3. count of channels used 
+    4. count of channels used in recordings sampled at 256/512Hz. 
+    """
     sfreq_list = []
+    aurical_list = []
+    #usable_list = []
+    #channel_set = set()
+    cnt_channels = Counter()
+    #channel_sfreq_set = set()
+    cnt_channels_sfreq = Counter()
     for edf_file in edf_list:
         #print("FIRST EDF FILE: ", edf_file)
         data = mne.io.read_raw_edf(edf_file, infer_types=True)
+        for chName in data.info['ch_names']:
+            chName = chName.removesuffix('-LE')
+            chName = chName.removesuffix('-REF')
+            #channel_set.add(chName)
+            cnt_channels[chName] += 1
         if data.info['sfreq'] % 256 == 0:
             sfreq_list.append(edf_file)
+            for chName in data.info['ch_names']:
+                chName = chName.removesuffix('-LE')
+                chName = chName.removesuffix('-REF')
+                #channel_sfreq_set.add(chName)
+                cnt_channels_sfreq[chName] += 1
 
-    return sfreq_list
+                if chName == 'A1':
+                    aurical_list.append(edf_file)
+    
+    return sfreq_list, aurical_list, cnt_channels, cnt_channels_sfreq 
+
+
+            
+
+
+
+    return sfreq_list, cnt_channels, cnt_channels_sfreq 
 
 def count_seizures(csv_list):
     count = 0
@@ -111,22 +144,22 @@ def count_seizures(csv_list):
     return count
 
 
-def count_channels(edf_list):
-    """Counts the occurence of each channel in the recordings"""
-    channel_set = set()
-    cnt = Counter()
-    aurical_list = []
-    for edf_file in edf_list:
-        #print(line.strip())
-        data = mne.io.read_raw_edf(edf_file, infer_types=True)
-        for chName in data.info['ch_names']:
-            channel_set.add(chName)
-            cnt[chName] += 1
+# def count_channels(edf_list):
+#     """Counts the occurence of each channel in the recordings"""
+#     channel_set = set()
+#     cnt = Counter()
+#     aurical_list = []
+#     for edf_file in edf_list:
+#         #print(line.strip())
+#         data = mne.io.read_raw_edf(edf_file, infer_types=True)
+#         for chName in data.info['ch_names']:
+#             channel_set.add(chName)
+#             cnt[chName] += 1
 
-        if any("A1-REF" in s for s in data.info['ch_names']):
-            aurical_list.append(edf_file)
+#         if any("A1-REF" in s for s in data.info['ch_names']):
+#             aurical_list.append(edf_file)
     
-    return cnt, aurical_list
+#     return cnt, aurical_list
         
 
 
@@ -139,21 +172,30 @@ def main():
     total_duration, total_seizure_duration = calculate_durations(csv_list)
     seizure_count = count_seizures(csv_list)
 
-    sfreq_edf_list = sfreq_subset(edf_list)
+    sfreq_edf_list, aurical_list, cnt_channels, cnt_channels_sfreq  = sfreq_subset(edf_list)
     sfreq_csv_list = [os.path.splitext(i)[0]+'.csv_bi' for i in sfreq_edf_list] #convert edf files to their corresponding csv_bi files
+    aurical_csv_list = [os.path.splitext(i)[0]+'.csv_bi' for i in aurical_list]
 
     total_sfreq_duration, total_sfreq_seizure_duration = calculate_durations(sfreq_csv_list)
+    total_aurical_duration, total_aurical_seizure_duration = calculate_durations(aurical_csv_list)
 
     seizure_sfreq_count = count_seizures(sfreq_csv_list)
 
     patient_set, session_set = count_recordings(edf_list)
     patient_sfreq_set, session_sfreq_set = count_recordings(sfreq_edf_list)
 
-    cnt, aurical_list = count_channels(edf_list)
-    cnt_sfreq, aurical_sfreq_list = count_channels(sfreq_edf_list)
+    #cnt, aurical_list = count_channels(edf_list)
+    #cnt_sfreq, aurical_sfreq_list = count_channels(sfreq_edf_list)
 
-    print(patient_set)
-    print(session_set)
+    #print(patient_set)
+    #print(session_set)
+
+    
+    # open file in write mode
+    with open(r'usable_edf_files.txt', 'w') as fp:
+        for file in sfreq_edf_list:
+            # write each item on a new line
+            fp.write("%s\n" % file)
 
     print("PATH IS ::::::  ", path)
 
@@ -171,8 +213,8 @@ def main():
     print("Total background duration: ", total_duration - total_seizure_duration)
     print("Total duration: ", total_duration)
 
-    print("Used channels: ", cnt)
-    print("Aurical channels: ", aurical_list)
+    print("Used channels: ", cnt_channels)
+    #print("Aurical channels: ", aurical_list)
 
 
 
@@ -186,8 +228,11 @@ def main():
     print("Total background duration of recordings at 256/512Hz: ", total_sfreq_duration - total_sfreq_seizure_duration)
     print("Total duration of recordings at 256/512Hz: ", total_sfreq_duration)
 
-    print("Used channels recorded at 256/512Hz: ", cnt_sfreq)
-    print("Aurical channels recorded at 256/512Hz: ", aurical_sfreq_list)
+    print("Used channels recorded at 256/512Hz: ", cnt_channels_sfreq)
+    #print("Aurical channels recorded at 256/512Hz: ", aurical_sfreq_list)
+    print("")
+    print("Total seizure duration of recordings sampled at 256/512Hz containing aurical channels: ", total_aurical_seizure_duration)
+    print("Total duration of recordings sampled at 256/512Hz containing aurical channels: ", total_aurical_duration)
 
     return
 
