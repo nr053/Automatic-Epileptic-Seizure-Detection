@@ -90,7 +90,6 @@ Necesitamos:
 tensor to input to tensor flow. 
 """
 
-############################### LAST THING ON THURSDAY #######################
 #input = tf.convert_to_tensor(epochs.get_data(), dtype=float)
 input = torch.tensor(epochs.get_data())
 labels = np.zeros([input.shape[0],2])
@@ -102,60 +101,121 @@ for row in df.iterrows():
     labels[round(row[1]['start_time']):round(row[1]['stop_time'])] = [0,1]
 
 
-############################## CHECK THIS WORKED BEFORE MOVING ON. PRETTY SURE IT DID
 
 torch.set_default_dtype(torch.float64)
 
+###### Calculate Features #####
+
+def calc_features(input_data):
+    """This function calculates representative features of each channel in an epoch. 
+    Each epoch is represented by 20 channels, which are represented by a list of features"""
+    
+    epoch_means = torch.empty(input.shape[:2])
+    epoch_variance = torch.empty(input.shape[:2])
+
+    for i,epoch in enumerate(input_data):
+        epoch_means[i] = epoch.mean(dim=1)
+        epoch_variance[i] = epoch.var(dim=1)
+
+    return epoch_means, epoch_variance
+
+epoch_means, epoch_variance = calc_features(input)
+
+
 class NeuralNetwork(nn.Module):
+    """Neural network taking two features (mean,variance) as input and returning class labels"""
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten(0,-1)
         self.linear_stack = nn.Sequential(
-            nn.Linear(20*256, 3000),
+            nn.Linear(2, 4),
             nn.ReLU(),
-            nn.Linear(3000,3000),
-            nn.ReLU(),
-            nn.Linear(3000,2000),
-            nn.ReLU(),
-            nn.Linear(2000,1000),
-            nn.ReLU(),
-            nn.Linear(1000,500),
-            nn.ReLU(),
-            nn.Linear(500,100),
-            nn.ReLU(),
-            nn.Linear(100,10),
-            nn.ReLU(),
-            nn.Linear(10,2)
+            nn.Linear(4,2)
         )
     
     def forward(self,x):
-        x = self.flatten(x)
+        #x = self.flatten(x)
         logits = self.linear_stack(x)
+        #probs = (softmax(logits))
+        #pred = torch.round(probs)
         return logits
-    
+
+
+
+
+
+class NeuralNetwork2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.flatten = nn.Flatten(0, -1)
+        self.convolutional_stack = nn.Sequential(
+            nn.LayerNorm(normalized_shape = [20,256]),
+            nn.Conv1D(20*256,3000, kernel_size=8,stride=5),
+            nn.ReLU(),
+            nn.Conv1D(20*256,3000, kernel_size=8,stride=5),
+            nn.ReLU(),
+            nn.Conv1D(3000,500, kernel_size=8,stride=5),
+            nn.ReLU(),
+            nn.Conv1D(500,10, kernel_size=8,stride=5),
+            nn.ReLU(),
+        )
+
+    def forward(self,x):
+        logits = self.convolutional_stack(x)
+        probs = softmax(logits)
+        preds = torch.round(probs)
+
+        return preds
+
 model = NeuralNetwork()
 
-sample = input[0:10]     # sample the first 10 epochs from the recording
-logits = model(sample)
+sample1 = input[0]     # sample the first epoch from the recording
+sample10 = input[30:40] # sample of 10 epochs containing a seizure start
+label1 = torch.tensor(labels[0]) # the class labels of the first epoch
+label10 = torch.tensor(labels[30:40])  # the class labels of the 10 epoch sample
 
-label = torch.tensor([1-labels[0], labels[0
+softmax  = nn.Softmax(dim=0) # activation function
 
-softmax  = nn.Softmax(dim=0)
-pred_probab = softmax(logits)
-pred_class = torch.round(pred_probab)
+# ####### HYPERPARAMETERS
 
-####### HYPERPARAMETERS
-
-learning_rate = 1e-3  # rate at which to update the parameters
-batch_size = 1        # number of samples used before updating parameters
-epochs = 1            # number of iterations over dataset
+learning_rate = 1e-2  # rate at which to update the parameters
+batch_size = 5        # number of samples used before updating parameters
+num_epochs = 200            # number of iterations over dataset
+#batches_per_epoch = len(X) // batch_size
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+#optimizer10 = torch.optim.SGD(model10.parameters(), lr=learning_rate)
 
-loss = loss_fn(pred_class, label)
+#loss1 = loss_fn(pred_class1, label1)
 
-##### BACKPROPOGATION #######
+# ##### BACKPROPOGATION #######
 
-optimizer.zero_grad()
-loss.backward()
-optimizer.step()
+#optimizer.zero_grad()
+#loss1.backward()
+#optimizer.step()
+
+def train_loop(input, labels, model, loss_fn, optimizer):
+    size = len(input)
+    #for X,y in input,labels:
+    for i in range(size):
+        #print("THIS IS THE INPUT SIZE: ", input[i].shape)
+        pred = model(input[i])
+        loss = loss_fn(pred,labels[i])
+        #Backpropogation
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()  #update the weights
+        print(f"loss: {loss:>7f}")
+
+
+num_epochs = 10
+# for i in range(num_epochs):
+#     print(f" Epoch {i+1}: ")
+#     train_loop(sample1[None,:], label1[None,:], model, loss_fn, optimizer)
+# print("Done!")
+
+
+for i in range(num_epochs):
+    print(f" Epoch {i+1}: ")
+    train_loop(sample10, label10, model, loss_fn, optimizer)
+print("Done!")
