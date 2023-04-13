@@ -1,16 +1,48 @@
-"""Epoch continuous data and visualize."""
+"""
+This is the prep_tools module, containing methods used to prepare raw edf files
+for input to a deep learning model including:
+    
+1. removing suffixes from channel names ("-LE", "-REF")
+2. creating class labels
+3. Calculating features
+"""
 
+import torch
+from scipy.stats import kurtosis
+from scipy.fft import fft
 import mne
-import pandas as pd
-import numpy as np
-from p_tools import remove_suffix
-from path import Path
-import matplotlib.pyplot as plt
-from scipy import signal
 
-#file = "/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/train/aaaaartn/s007_2014_11_09/03_tcp_ar_a/aaaaartn_s007_t019.edf"
-#file = "/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/train/aaaaartn/s007_2014_11_09/03_tcp_ar_a/aaaaartn_s007_t018.edf"
-file = Path.machine_path + "train/aaaaaizz/s005_2010_10_12/03_tcp_ar_a/aaaaaizz_s005_t000.edf"
+def remove_suffix(word, suffixes):
+    """Remove any suffixes contained in the 'suffixes' array from 'word'"""
+    for suffix in suffixes:
+        if word.endswith(suffix):
+            return word.removesuffix(suffix)
+    return word
+
+def make_labels(epoch_tensor, df):
+    """Creates class labels for the input data using the csv file"""
+    labels = torch.empty([epoch_tensor.shape[0],2])
+    for i,epoch in enumerate(labels):
+        labels[i] = torch.tensor([1,0]) #set all class labels to [1,0] (background activity)
+    for row in df.iterrows():
+        labels[round(row[1]['start_time']):round(row[1]['stop_time'])] = torch.tensor([0,1]) #set seizure class labels (round to nearest second)
+    return labels
+
+def calc_features(epoch_tensor):
+    """This function calculates representative features of each channel in an epoch. 
+    Each epoch is represented by 20 channels, which are represented by a list of features:
+    
+    1. Epoch mean
+    2. Epoch variance
+    3. Kurtosis
+    4. """
+
+    size = list(epoch_tensor.shape[:2])
+    size.append(3)
+    features = torch.empty(size)
+    for i, epoch in enumerate(epoch_tensor):
+        features[i] = torch.stack([epoch.mean(dim=1), epoch.var(dim=1), torch.tensor(kurtosis(epoch.numpy(),axis=1))],dim=1)
+    return features
 
 def apply_montage(data):
     """Apply the bipolar montage"""
@@ -65,52 +97,3 @@ def plot_spectrogram_plt(bipolar_data):
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
     plt.show()
-
-
-def plot_example_spectrogram():
-    """This is an example of how to make a spectrogram"""
-    frequencies = np.arange(5,105,5)
-    samplingFrequency   = 400
-    s1 = np.empty([0]) # For samples
-    s2 = np.empty([0]) # For signal
-    start = 1
-    stop = samplingFrequency+1
-    for frequency in frequencies:
-        sub1 = np.arange(start, stop, 1)
-    # Signal - Sine wave with varying frequency + Noise
-        sub2 = np.sin(2*np.pi*sub1*frequency*1/samplingFrequency)+np.random.randn(len(sub1))
-        s1 = np.append(s1, sub1)
-        s2 = np.append(s2, sub2)
-        start = stop+1
-        stop = start+samplingFrequency
-
-    # Plot the signal
-    plt.subplot(211)
-    plt.plot(s1,s2)
-    plt.xlabel('Sample')
-    plt.ylabel('Amplitude')
-
-    # Plot the spectrogram
-    plt.subplot(212)
-    powerSpectrum2, freqenciesFound2, time2, imageAxis2 = plt.specgram(s2, Fs=samplingFrequency)
-    plt.xlabel('Time')
-    plt.ylabel('Frequency')
-    plt.show()   
-
-def main():
-    data = mne.io.read_raw_edf(file, infer_types=True)
-    duration = data._raw_extras[0]['n_records']
-    bipolar_data = apply_montage(data)
-    bipolar_data = write_annotations(file, bipolar_data)
-    epochs = mne.make_fixed_length_epochs(bipolar_data, duration=1)
-    #check if the epoching worked by comparing the plots
-    epochs.plot(n_epochs=5)
-    bipolar_data.plot(duration=5,highpass=1, lowpass=70, n_channels=20)
-
-    plot_spectrogram_plt(bipolar_data)
-    plot_example_spectrogram()
-
-if __name__ == "__main__":
-    main()
-
-

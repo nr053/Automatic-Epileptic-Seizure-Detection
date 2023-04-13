@@ -10,99 +10,72 @@ from torch import nn
 import numpy as np
 import tqdm
 import copy
+import matplotlib.pyplot as plt
+from p_tools import remove_suffix, make_labels, calc_features, apply_montage
+from path import Path
 
-def remove_suffix(word, suffixes):
-    """Remove any suffixes contained in the 'suffixes' array from 'word'"""
-    for suffix in suffixes:
-        if word.endswith(suffix):
-            return word.removesuffix(suffix)
-    return word
-
-def make_labels(epoch_tensor, df):
-    """Creates class labels for the input data using the csv file"""
-    labels = torch.empty([epoch_tensor.shape[0],2])
-    for i,epoch in enumerate(labels):
-        labels[i] = torch.tensor([1,0]) #set all class labels to [1,0] (background activity)
-    for row in df.iterrows():
-        labels[round(row[1]['start_time']):round(row[1]['stop_time'])] = torch.tensor([0,1]) #set seizure class labels (round to nearest second)
-    return labels
-
-def calc_features(epoch_tensor):
-    """This function calculates representative features of each channel in an epoch. 
-    Each epoch is represented by 20 channels, which are represented by a list of features"""
-    epoch_means = torch.empty(epoch_tensor.shape[:2]) #create empty tensor of size = n_channels x n_epochs
-    epoch_variance = torch.empty(epoch_tensor.shape[:2]) 
-    for i,epoch in enumerate(epoch_tensor):
-        epoch_means[i] = epoch.mean(dim=1) # add means to epoch_mean_list
-        epoch_variance[i] = epoch.var(dim=1)
-    return epoch_means, epoch_variance
 
 torch.set_default_dtype(torch.float64) # set default type of torch.tensors
+
+class PrintSize(nn.Module):
+    first = True
+
+    def forward(self,x):
+        if self.first:
+            print(f"Size: {x.size()}")
+            self.first = False
+        return x
+
 class NeuralNetwork(nn.Module):
     """Neural network taking two features (mean,variance) as input and returning class labels"""
     def __init__(self):
         super().__init__()
-        self.flatten = nn.Flatten(0,-1)
+        PrintSize()
         self.linear_stack = nn.Sequential(
-            nn.Linear(2, 4),
+            PrintSize(),
+            nn.Flatten(),
+            PrintSize(),
+            nn.Linear(60, 200),
             nn.ReLU(),
-            nn.Linear(4,2)
+            nn.Linear(200,100),
+            nn.ReLU(),
+            nn.Linear(100,2)
         )
     
     def forward(self,x):
-        #x = self.flatten(x)
         logits = self.linear_stack(x)
         #probs = (softmax(logits))
         #pred = torch.round(probs)
         return logits
 
 
-file = "/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/train/aaaaaizz/s005_2010_10_12/03_tcp_ar_a/aaaaaizz_s005_t000.edf"
+file = Path.machine_path + "train/aaaaaizz/s005_2010_10_12/03_tcp_ar_a/aaaaaizz_s005_t000.edf"
 data = mne.io.read_raw_edf(file, infer_types=True) # read edf file
-channel_renaming_dict = {name: remove_suffix(name, ['-LE', '-REF']) for name in data.ch_names} # define renaming dict
-data.rename_channels(channel_renaming_dict) # rename the channels
-bipolar_data = mne.set_bipolar_reference( # set bipolar reference montage
-    data.load_data(), 
-    anode=['FP1', 'F7', 'T3', 'T5',
-         'FP1', 'F3', 'C3', 'P3',
-         'FP2', 'F4', 'C4', 'P4', 
-         'FP2', 'F8', 'T4', 'T6',
-         'T3', 'C3', 'CZ', 'C4'], 
-    cathode=['F7','T3', 'T5', 'O1', 
-             'F3', 'C3', 'P3', 'O1', 
-             'F4', 'C4', 'P4', 'O2', 
-             'F8', 'T4', 'T6', 'O2',
-             'C3', 'CZ', 'C4', 'T4'], 
-    drop_refs=True)
 
-bipolar_data.pick_channels(['FP1-F7', 'F7-T3', 'T3-T5', 'T5-O1', # select channels to use
-                            'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1',
-                            'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 
-                            'FP2-F8', 'F8-T4', 'T4-T6', 'T6-O2', 
-                            'T3-C3', 'C3-CZ', 'CZ-C4', 'C4-T4'])
+bipolar_data = apply_montage(data)
 
 epochs = mne.make_fixed_length_epochs(bipolar_data, duration=1) # create epochs
 epoch_tensor = torch.tensor(epochs.get_data())
 df = pd.read_csv(file.removesuffix('edf') + 'csv_bi', header=5) # create dataframe from csv file
 labels = make_labels(epoch_tensor, df) # set class labels
-epoch_means, epoch_variance = calc_features(epoch_tensor)
+features = calc_features(epoch_tensor)
 
 model = NeuralNetwork()
 
-X_train = torch.stack((epoch_means[:500,0], epoch_variance[:500,0]),1)      # sample the first epoch from the recording (using only one channel)
-X_test = torch.stack((epoch_means[500:,0], epoch_variance[500:,0]),1)     
+X_train = features[:500]    # sample the first epoch from the recording (using only one channel)
+X_test = features[500:]
 y_train = labels[:500]
 y_test = labels[500:]
 
 learning_rate = 0.001  # rate at which to update the parameters
-batch_size = 5        # number of samples used before updating parameters
+batch_size = 16        # number of samples used before updating parameters
 n_epochs = 200            # number of iterations over dataset
 batches_per_epoch = len(X_train) // batch_size 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 
-# def train_loop(input, labels, model, loss_fn, optimizer):
+#  def train_loop(input, labels, model, loss_fn, optimizer):
 #     size = len(input)
 #     #for X,y in input,labels:
 #     for i in range(size):
@@ -173,4 +146,21 @@ for epoch in range(n_epochs):
         best_weights = copy.deepcopy(model.state_dict())
     print(f"Epoch {epoch} validation: loss={loss}, accuracy={accuracy}")
 
+
+# Restore best model
 model.load_state_dict(best_weights)
+ 
+# Plot the loss and accuracy
+plt.plot(train_loss_hist, label="train")
+plt.plot(test_loss_hist, label="test")
+plt.xlabel("epochs")
+plt.ylabel("cross entropy")
+plt.legend()
+plt.show()
+ 
+plt.plot(train_acc_hist, label="train")
+plt.plot(test_acc_hist, label="test")
+plt.xlabel("epochs")
+plt.ylabel("accuracy")
+plt.legend()
+plt.show()

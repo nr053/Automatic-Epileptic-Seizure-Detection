@@ -6,6 +6,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
 import tqdm
 import copy
+import matplotlib.pyplot as plt
 
 path = "/Users/toucanfirm/Documents/DTU/Speciale/Sandbox/iris.data"
 
@@ -93,3 +94,7 @@ for epoch in range(n_epochs):
         best_acc = acc
         best_weights = copy.deepcopy(model.state_dict())
     print(f"Epoch {epoch} validation: loss={loss}, accuracy={accuracy}")
+
+model.load_state_dict(best_weights)
+
+
