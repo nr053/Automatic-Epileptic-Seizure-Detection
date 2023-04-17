@@ -11,6 +11,14 @@ import torch
 from scipy.stats import kurtosis
 from scipy.fft import fft
 import mne
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def load_data(file_name):
+    raw_signal_object = mne.io.read_raw_edf(file_name, infer_types=True)
+    timestamps_frame = pd.read_csv(file_name.removesuffix('edf') + 'csv_bi', header=5)
+
+    return raw_signal_object, timestamps_frame
 
 def remove_suffix(word, suffixes):
     """Remove any suffixes contained in the 'suffixes' array from 'word'"""
@@ -69,11 +77,10 @@ def apply_montage(data):
                             'T3-C3', 'C3-CZ', 'CZ-C4', 'C4-T4'])
     return bipolar_data
 
-def write_annotations(file, bipolar_data):
+def write_annotations(bipolar_data, labels_df):
     """Read annotations from csv file and write them to the mne object"""
-    df = pd.read_csv(file.removesuffix('edf') + 'csv_bi', header=5)
-    onset_times = df['start_time'].values
-    durations = df['stop_time'].values - df['start_time'].values 
+    onset_times = labels_df['start_time'].values
+    durations = labels_df['stop_time'].values - labels_df['start_time'].values 
     description = ["seizure"]
     annotations = mne.Annotations(onset_times, durations, description)
     bipolar_data.set_annotations(annotations)
