@@ -95,7 +95,7 @@ class NeuralNetwork2(nn.Module):
 
 #model = NeuralNetwork()
 model = NeuralNetwork2()
-learning_rate = 1e-2  # rate at which to update the parameters
+learning_rate = 1e-3  # rate at which to update the parameters
 batch_size = 16        # number of samples used before updating parameters
 n_epochs = 200            # number of iterations over dataset
 batches_per_epoch = len(X_train) // batch_size

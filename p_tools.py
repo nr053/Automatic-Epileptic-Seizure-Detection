@@ -33,7 +33,8 @@ def make_labels(epoch_tensor, df):
     for i,epoch in enumerate(labels):
         labels[i] = torch.tensor([1,0]) #set all class labels to [1,0] (background activity)
     for row in df.iterrows():
-        labels[round(row[1]['start_time']):round(row[1]['stop_time'])] = torch.tensor([0,1]) #set seizure class labels (round to nearest second)
+        if row[1]['label'] == "seiz":
+            labels[round(row[1]['start_time']):round(row[1]['stop_time'])] = torch.tensor([0,1]) #set seizure class labels (round to nearest second)
     return labels
 
 def calc_features(epoch_tensor):
@@ -79,11 +80,12 @@ def apply_montage(data):
 
 def write_annotations(bipolar_data, labels_df):
     """Read annotations from csv file and write them to the mne object"""
-    onset_times = labels_df['start_time'].values
-    durations = labels_df['stop_time'].values - labels_df['start_time'].values 
-    description = ["seizure"]
-    annotations = mne.Annotations(onset_times, durations, description)
-    bipolar_data.set_annotations(annotations)
+    if labels_df['label'].eq("seiz").any(): #if the event df contains a seizure
+        onset_times = labels_df['start_time'].values
+        durations = labels_df['stop_time'].values - labels_df['start_time'].values 
+        description = ["seizure"]
+        annotations = mne.Annotations(onset_times, durations, description)
+        bipolar_data.set_annotations(annotations)
     return bipolar_data
 
 def plot_spectrogram_plt(bipolar_data):
@@ -104,3 +106,24 @@ def plot_spectrogram_plt(bipolar_data):
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
     plt.show()
+
+
+
+# with open('file_list_256.txt') as f:
+#     lines = [line.rstrip() for line in f]
+
+
+# for i in range(5):
+#     signal_obj, timestamps_df = load_data(lines[i])
+#     bipolar = write_annotations(apply_montage(signal_obj), timestamps_df)
+#     epochs = mne.make_fixed_length_epochs(bipolar, duration=1)
+#     epoch_tensor = torch.tensor(epochs.get_data())
+#     labels = make_labels(epoch_tensor, timestamps_df)
+#     bipolar.plot(duration=5,highpass=1, lowpass=70, n_channels=20)
+
+#     print("THIS IS SIGNAL NUMBER: ", i)
+#     print(timestamps_df)
+
+#     for j in range(len(labels)):
+#         if labels[j] == [0,1]:
+#             print(j)
