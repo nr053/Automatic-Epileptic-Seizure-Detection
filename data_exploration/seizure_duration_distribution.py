@@ -161,6 +161,41 @@ print("--------------------------")
 
 
 
+print("There are some seizures with a duration less than 0.")
+df_minus = df_total[df_total['duration'] < 0]
+print(df_minus)
+print("These are mistakes, remove.")
+
+df_train = df_train[df_train['duration'] > 0]
+df_dev = df_dev[df_dev['duration'] > 0]
+df_eval = df_eval[df_eval['duration'] > 0]
+df_total = df_total[df_total['duration'] > 0 ]
+
+print("------ Train Stats-------")
+print("")
+print(f"Maximum seizure length: {df_train.loc[df_train['duration'].idxmax()]}")
+print(f"Minimum seizure length: {df_train.loc[df_train['duration'].idxmin()]}")
+print(f"Mean seizure length: {df_train['duration'].mean()}")
+print(f"Median seizure length: {df_train['duration'].median()}")
+print("")
+print("--------------------------")
+print("------ Dev Stats-------")
+print("")
+print(f"Maximum seizure length: {df_dev.loc[df_dev['duration'].idxmax()]}")
+print(f"Minimum seizure length: {df_dev.loc[df_dev['duration'].idxmin()]}")
+print(f"Mean seizure length: {df_dev['duration'].mean()}")
+print(f"Median seizure length: {df_dev['duration'].median()}")
+print("")
+print("--------------------------")
+print("------ Eval Stats-------")
+print("")
+print(f"Maximum seizure length: {df_eval.loc[df_eval['duration'].idxmax()]}")
+print(f"Minimum seizure length: {df_eval.loc[df_eval['duration'].idxmin()]}")
+print(f"Mean seizure length: {df_eval['duration'].mean()}")
+print(f"Median seizure length: {df_eval['duration'].median()}")
+print("")
+print("--------------------------")
+
 plt.figure(0)
 df_train.hist(column="duration", bins=100)
 plt.savefig("/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/data_exploration/train_seizure_duration_distribution.png")
@@ -177,7 +212,9 @@ plt.figure(3)
 df_total.hist(column="duration", bins=100)
 plt.savefig("/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/data_exploration/total_seizure_duration_distribution.png")
 
-
+plt.figure(4)
+df_total[df_total['duration']<350].hist(column="duration", bins=100, grid=False)
+plt.savefig("/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/data_exploration/total_seizure_duration_distribution_noutliers.png")
 
 #negative durations are obviously typos. Let's examine some of the files that say this. 
 
