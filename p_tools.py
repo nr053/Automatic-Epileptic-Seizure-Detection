@@ -15,8 +15,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def load_data(file_name, epoch_length):
-    raw_signal_object = mne.io.read_raw_edf(file_name, infer_types=True)
+    raw_signal_object = mne.io.read_raw_edf(file_name, infer_types=True, preload=True)
+    raw_signal_object.filter(1,70)
+    #sfreq = raw_signal_object.info['sfreq']
+    
     timestamps_frame = pd.read_csv(file_name.removesuffix('edf') + 'csv_bi', header=5)
+
 
     bipolar_data = apply_montage(raw_signal_object)
     epochs = mne.make_fixed_length_epochs(bipolar_data, duration=epoch_length) # create epochs
@@ -25,6 +29,7 @@ def load_data(file_name, epoch_length):
     labels = make_labels(epoch_tensor, timestamps_frame)
 
     return bipolar_data, annotated_data, epoch_tensor, labels
+
 
 def remove_suffix(word, suffixes):
     """Remove any suffixes contained in the 'suffixes' array from 'word'"""
