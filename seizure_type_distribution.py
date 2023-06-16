@@ -77,19 +77,38 @@ tt_index = np.delete(t_index, 1)
 
 d_values = df_dev.groupby(['label']).sum('duration')['duration'].values
 d_index = df_dev.groupby(['label']).sum('duration')['duration'].index.values
-d_values = np.delete(d_values, 1)
-d_index = np.delete(d_index, 1)
+dd_values = np.delete(d_values, 1)
+dd_index = np.delete(d_index, 1)
 
 e_values = df_eval.groupby(['label']).sum('duration')['duration'].values
 e_index = df_eval.groupby(['label']).sum('duration')['duration'].index.values
-e_values = np.delete(e_values, 1)
-e_index = np.delete(e_index, 1)
+ee_values = np.delete(e_values, 1)
+ee_index = np.delete(e_index, 1)
+
+plt.figure(1)
+plt.subplot(231)
+plt.bar(t_index, t_values, color=['#FF7D40','#C94845', '#1C86EE', '#49D845', '#76EEC6'], edgecolor='black')
+plt.title("Duration of seizure types in the train set")
+plt.subplot(232)
+plt.bar(d_index, d_values, color=['#FF7D40','#C94845', '#1C86EE', '#49D845', '#76EEC6'], edgecolor='black')
+plt.title("Duration of seizure types in the dev set")
+plt.subplot(233)
+plt.bar(e_index, e_values, color=['#FF7D40','#C94845', '#1C86EE', '#49D845', '#76EEC6'])
+plt.title("Duration of seizure types in the eval set")
+plt.subplot(234)
+plt.bar(tt_index, tt_values, color=['#C94845', '#4958B5', '#49D845', '#76EEC6'], edgecolor='black')
+plt.title("Duration of seizure types in the train set (no bckg)")
+plt.subplot(235)
+plt.bar(dd_index, dd_values,color=['#C94845', '#4958B5', '#49D845', '#76EEC6'], edgecolor='black')
+plt.title("Duration of seizure types in the dev set (no bckg)")
+plt.subplot(236)
+plt.bar(ee_index, ee_values, color=['#C94845', '#4958B5', '#49D845', '#76EEC6'], edgecolor='black')
+plt.title("Duration of seizure types in the eval set (no bckg)")
+plt.show()
 
 
-plt.bar(t_index, t_values)
-plt.show()
-plt.bar(tt_index, tt_values)
-plt.show()
+
+
 
 
 #df_train.groupby('label').sum().drop('bckg')['duration'].plot.bar()
