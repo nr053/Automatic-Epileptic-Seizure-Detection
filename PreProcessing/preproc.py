@@ -15,8 +15,9 @@
 import mne 
 import pandas as pd
 from parent import p_tools
+from parent.path import Path
 
-file = '/Users/toucanfirm/Documents/DTU/Speciale/TUSZ_V2/edf/train/aaaaaizz/s005_2010_10_12/03_tcp_ar_a/aaaaaizz_s005_t000.edf'
+file = Path.data + '/edf/train/aaaaaizz/s005_2010_10_12/03_tcp_ar_a/aaaaaizz_s005_t000.edf'
 recording_name = file.split('/')[-1]
 #filtering
 raw = mne.io.read_raw_edf(file, infer_types=True, preload=True)
@@ -75,7 +76,18 @@ seizure_samples = []
 #     background_samples.append(raw_resampled())
 
 
-#assuming all recordings start and end with background activity
+# assuming all recordings start and end with background activity
+# if the recording contains seizures
+#   first background recording is from 0.0 - start of first seizure
+#   first seizure is from start - end of first seizure
+#   crop the recording into background and seizure recordings 
+#   appending each recording to a list of corresponding class
+
+
+
+
+
+
 if (df['label'].eq('seiz')).any():
     bckg_start=0.0 
     for row in df.iterrows():
@@ -98,31 +110,48 @@ if (df['label'].eq('seiz')).any():
 else: 
     background_samples.append({"recording": raw_resampled(), "original_file":recording_name, "original_time_window": None, "cropped": False})
 
-
+#What happens if a file less than two seconds is epoched? Error is thrown
 #drop the background recordings less than 2 seconds
-
 
 background_epochs = []
 seizure_epochs = []
+epoch_list = []
 
 for bckg_sample in background_samples:
-    background_epochs.append(mne.make_fixed_length_epochs(bckg_sample.recording, duration=2.0, overlap=0.0)) #2 second stride
+    if len(bckg_sample['recording'])/bckg_sample['recording'].info['sfreq'] < 2:
+        background_samples.remove(bckg_sample)
+    else:
+        bckg_sample['epochs'] = mne.make_fixed_length_epochs(bckg_sample['recording'], duration=2.0, overlap=0.0) #2 second stride
+        epoch_start = 0
+        for epoch in bckg_sample['epochs'].get_data():
+            epoch_list.append({'epoch': [epoch], 'recording': bckg_sample['original_file'], 'timestamp': bckg_sample['original_time_window'][0]+(epoch_start), 'gt':0, 'pred':None})
+            epoch_start+=2
 
 for sz_sample in seizure_samples:
-    seizure_epochs.append(mne.make_fixed_length_epochs(sz_sample.recording, duration=2.0, overlap=1.5)) #0.5 second stride
-
-number_of_background_epochs = 0
-number_of_seizure_epochs = 0
-
-for bckg_epoch in background_epochs:
-    number_of_background_epochs += bckg_epoch.get_data().shape[0]
-
-for sz_epoch in seizure_epochs:
-    number_of_seizure_epochs += sz_epoch.get_data().shape[0]
+    if len(sz_sample['recording'])/sz_sample['recording'].info['sfreq'] <2:
+        seizure_samples.remove(sz_sample)
+    else:
+        sz_sample['epochs'] = mne.make_fixed_length_epochs(sz_sample['recording'], duration=2.0, overlap=1.5) #0.5 second stride
+        epoch_start = 0
+        for epoch in sz_sample['epochs'].get_data():
+            epoch_list.append({'epoch': [epoch], 'recording': sz_sample['original_file'], 'timestamp': sz_sample['original_time_window'][0]+(epoch_start), 'gt':1, 'pred':None})
+            epoch_start+=0.5
 
 
-print(f"Number of background epochs: {number_of_background_epochs}")
-print(f"Number of seizure epochs after upsampling: {number_of_seizure_epochs}")
+data_df = pd.DataFrame(epoch_list)
+
+# number_of_background_epochs = 0
+# number_of_seizure_epochs = 0
+
+# for bckg_epoch in background_epochs:
+#     number_of_background_epochs += bckg_epoch.get_data().shape[0]
+
+# for sz_epoch in seizure_epochs:
+#     number_of_seizure_epochs += sz_epoch.get_data().shape[0]
+
+
+# print(f"Number of background epochs: {number_of_background_epochs}")
+# print(f"Number of seizure epochs after upsampling: {number_of_seizure_epochs}")
 
 #compare downsample then epoch
 #with epoch then downsample
