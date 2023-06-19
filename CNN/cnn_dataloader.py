@@ -9,10 +9,6 @@ from torch.utils.data import Dataset
 import numpy as np
 
 
-
-torch.set_default_dtype(torch.float64)
-
-
 class CNN_Dataset(Dataset):
     """EEG Dataset class for the raw signal inputs."""
 
@@ -35,7 +31,8 @@ class CNN_Dataset(Dataset):
             idx = idx.tolist()
         
         epoch_path = self.df.iloc[idx]['epoch']
-        epoch_tens = torch.load(epoch_path)
+        epoch_tens = torch.load(epoch_path).double()
+        epoch_tens = epoch_tens[None,:]
 
         label = float(self.df.iloc[idx]['gt'])
 
