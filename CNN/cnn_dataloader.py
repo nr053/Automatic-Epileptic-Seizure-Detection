@@ -18,6 +18,7 @@ class CNN_Dataset(Dataset):
             csv_file: path to the csv file containing paths of epoch tensors and labels
         """
         self.df = pd.read_csv(csv_file)
+        #self.df = self.dataframe[:10000]
         self.transform = transform
 
 
@@ -34,10 +35,17 @@ class CNN_Dataset(Dataset):
         epoch_tens = torch.load(epoch_path).double()
         epoch_tens = epoch_tens[None,:]
 
-        label = float(self.df.iloc[idx]['gt'])
+        label = torch.tensor([1-float(self.df.iloc[idx]['gt']), float(self.df.iloc[idx]['gt'])])
 
-        sample = {'X': epoch_tens, 'y': label}
+        sample = {'X': epoch_tens, 'y': label, 'idx': idx, 'prediction': -1}
 
         return sample
+
+    def add_prediction(self, sample):
+        idx_pred_list = list(zip(sample['idx'], sample['prediction'].detach()))
+
+        for idx, prediction in idx_pred_list:
+            self.df.loc[idx.item(),'pred'] = prediction[1].item()
+
 
 
