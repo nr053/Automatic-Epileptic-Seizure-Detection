@@ -154,3 +154,81 @@ WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PrePro
 WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
   raw.notch_filter(freqs=60)
 
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:56: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+
+WARNING:py.warnings:/home/migo/TUHP/Automatic-Epileptic-Seizure-Detection/PreProcessing/preproc_dev.py:57: RuntimeWarning: filter_length (1691) is longer than the signal (1536), distortion is likely. Reduce filter length or filter a longer signal.
+  raw.notch_filter(freqs=60)
+

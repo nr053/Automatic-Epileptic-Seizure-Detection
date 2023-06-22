@@ -30,6 +30,7 @@ from sklearn.metrics import confusion_matrix
 from statistics import mean
 import copy
 from sklearn import metrics
+from prettytable import PrettyTable
 
 torch.set_default_dtype(torch.float64)
 from cnn_dataloader import CNN_Dataset
@@ -42,6 +43,20 @@ train_data = CNN_Dataset(csv_file= Path.repo + '/TrainingEpochs/train_only_recor
 test_data = CNN_Dataset(csv_file= Path.repo + '/DevEpochs/dev_only_records_with_seizures.csv')
 
 
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        params = parameter.numel()
+        table.add_row([name, params])
+        total_params += params
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+    
+
 
 class PrintSize(nn.Module):
     """Utility to print the size of the tensor in the current step (only on the first forward pass)"""
@@ -53,52 +68,111 @@ class PrintSize(nn.Module):
             self.first = False
         return x
 
-# class CNN1(nn.Module):
-#     def __init__(self):
-#         super().__init__()
-#         #self.flatten = nn.Flatten(0, -1)
-#         self.convolutional_stack = nn.Sequential(
-#             #nn.LayerNorm(normalized_shape = [256]),
-#             PrintSize(),
-#             nn.Conv2d(in_channels=1, out_channels=20, kernel_size=(1,10), padding=0, stride=1), #convolve in the time direction with (1x10) filters. 
 
-#             PrintSize(),
+class CNN1_DTU(nn.Module):
+    def __init__(self):
+        super().__init__()
+        #self.flatten = nn.Flatten(0, -1)
+        self.convolutional_stack = nn.Sequential(
+            #nn.LayerNorm(normalized_shape = [256]),
+            PrintSize(),
+            nn.Conv2d(in_channels=1, out_channels=20, kernel_size=(1,10), padding=(0,0), stride=(1,1)), #convolve in the time direction with (1x10) filters. 
 
-#             nn.Conv2d(in_channels=20, out_channels=20, kernel_size=(20,1), padding=(10,0)),
-#             PrintSize(),
-#             nn.BatchNorm2d(num_features=20),
-#             PrintSize(),
-#             nn.ELU(),
-#             nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+            PrintSize(),
 
-#             PrintSize(),
+            nn.Conv2d(in_channels=20, out_channels=20, kernel_size=(20,1), padding=(10,0)),
+            PrintSize(),
+            nn.BatchNorm2d(num_features=20),
+            PrintSize(),
+            nn.ELU(),
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+
+            PrintSize(),
             
-#             nn.Conv2d(in_channels=20, out_channels=40, kernel_size=(10,10), padding=0, stride=1),
-#             PrintSize(),
-#             nn.BatchNorm2d(num_features=40),
-#             PrintSize(),
-#             nn.ELU(),            
-#             nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+            nn.Conv2d(in_channels=20, out_channels=40, kernel_size=(10,10), padding=(0), stride=(1,1)),
+            PrintSize(),
+            nn.BatchNorm2d(num_features=40),
+            PrintSize(),
+            nn.ELU(),            
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
             
-#             PrintSize(),
+            PrintSize(),
 
-#             nn.Conv2d(in_channels=40, out_channels=80, kernel_size=(10,10), padding=0, stride=1),
-#             PrintSize(),
-#             nn.BatchNorm2d(num_features=80),
-#             PrintSize(),
-#             nn.ELU(),
+            nn.Conv2d(in_channels=40, out_channels=80, kernel_size=(10,10), padding=(0,0), stride=(1,1)),
+            PrintSize(),
+            nn.BatchNorm2d(num_features=80),
+            PrintSize(),
+            nn.ELU(),
 
-#             nn.Flatten(1,-1), #keep the first dimension (batch size) and flatten the rest
-#             PrintSize(),
-#             nn.Linear(in_features=26160, out_features=2),
-#             nn.Softmax(dim=1)
-#         )
+            nn.Flatten(1,-1), #keep the first dimension (batch size) and flatten the rest
+            PrintSize(),
+            nn.Linear(in_features=26160, out_features=2),
+            nn.Softmax(dim=1)
+        )
 
-#     def forward(self,x):
-#         logits = self.convolutional_stack(x)
-#         #probs = softmax(logits)
-#         #preds = torch.round(probs)
-#         return logits
+    def forward(self,x):
+        logits = self.convolutional_stack(x)
+        #probs = softmax(logits)
+        #preds = torch.round(probs)
+        return logits
+
+
+class CNN1_DTU_mini(nn.Module):
+    def __init__(self):
+        super().__init__()
+        #self.flatten = nn.Flatten(0, -1)
+        self.convolutional_stack = nn.Sequential(
+            #nn.LayerNorm(normalized_shape = [256]),
+            PrintSize(),
+            nn.Conv2d(in_channels=1, out_channels=10, kernel_size=(1,10), padding=(0,4), stride=(1,1)), #convolve in the time direction with (1x10) filters. 
+            PrintSize(),
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+
+            PrintSize(),
+
+            nn.Conv2d(in_channels=10, out_channels=10, kernel_size=(20,1), padding=(10,0)),
+            nn.BatchNorm2d(num_features=10),
+            PrintSize(),
+            nn.ELU(),
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+
+            PrintSize(),
+            
+            nn.Conv2d(in_channels=10, out_channels=10, kernel_size=(5,5), padding=(8,0), stride=(2,2)),
+            PrintSize(),
+            nn.BatchNorm2d(num_features=10),
+            PrintSize(),
+            nn.ELU(),            
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+            
+            PrintSize(),
+
+            nn.Conv2d(in_channels=10, out_channels=20, kernel_size=(3,3), padding=(2,0), stride=(2,4)),
+            PrintSize(),
+            nn.BatchNorm2d(num_features=20),
+            PrintSize(),
+            nn.ELU(),
+            nn.MaxPool2d(kernel_size=(1,2), stride=(1,2)),
+
+            # PrintSize(),
+
+            # nn.Conv2d(in_channels=20, out_channels=40, kernel_size=(3,3), padding=(2,0), stride=(2,4)),
+            # PrintSize(),
+            # nn.BatchNorm2d(num_features=40),
+            # PrintSize(),
+            # nn.ELU(),
+
+            nn.Flatten(1,-1), #keep the first dimension (batch size) and flatten the rest
+            PrintSize(),
+            nn.Linear(in_features=600, out_features=2),
+            nn.Softmax(dim=1)
+        )
+
+    def forward(self,x):
+        logits = self.convolutional_stack(x)
+        #probs = softmax(logits)
+        #preds = torch.round(probs)
+        return logits
 
 # class CNN2(nn.Module):
 #     def __init__(self):
@@ -174,18 +248,19 @@ class CNN3(nn.Module):
         #preds = torch.round(probs)
         return logits
 
-#model = CNN1()
+#model = CNN1_DTU()
+model = CNN1_DTU_mini()
 #model = CNN2()
-model = CNN3()
+#model = CNN3()
 
 learning_rate = 4e-6  # rate at which to update the parameters
-n_epochs = 1            # number of iterations over dataset
+n_epochs = 80            # number of iterations over dataset
 batch_size = 512
 #batches_per_epoch = len(train_data) / batch_size
 #loss_fn = nn.BCELoss()
 loss_fn = nn.CrossEntropyLoss()
-#optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
-optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+#optimizer = torch.optim.RMSprop(model.parameters(), lr=learning_rate)
 
 train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=True)
@@ -254,19 +329,43 @@ def train_loop(dataloader, model, loss_fn, optimizer):
     train_batch_accuracy_history = []
     size = len(dataloader.dataset)
 
-    pred_times = []
-    optimisation_times = []
+    #pred_times = []
+    #optimisation_times = []
 
 
     #for batch, sample in tqdm(enumerate(dataloader)):
     #with Bar('Processing...') as bar:
+
+    prediction_times = []
+    loading_times = []
+    loss_times = []
+    optimisation_times = []
+    batch_times = []
+    
+    t_end = 0.0
+    first_batch = True
+    
     loop = tqdm(dataloader)
     for sample in loop:
     #for sample in dataloader:
+        t_start = time.time()
+        print("")  
+        if not first_batch:
+            loading_times.append(t_start - t_end)
+            print(f"Loading took: {mean(loading_times)}")
+        
         t_before_pred = time.time()
         sample['prediction'] = model(sample['X'])
         t_after_pred = time.time()
+        prediction_times.append(t_after_pred - t_before_pred)
+        print(f"Predicting takes: {mean(prediction_times)}")
+        
+
+        t_before_loss = time.time()
         loss = loss_fn(sample['prediction'], sample['y'])
+        t_after_loss = time.time()
+        loss_times.append(t_after_loss - t_before_loss)
+        print(f"Calculating loss takes: {mean(loss_times)}")
 
         train_batch_loss_history.append(loss.item())
         batch_accuracy = (torch.argmax(sample['prediction'],1) == torch.argmax(sample['y'],1)).float().mean().item()
@@ -277,7 +376,8 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         loss.backward()
         optimizer.step()
         t_after_optimisation = time.time()
-
+        optimisation_times.append(t_after_optimisation - t_before_optimisation)
+        print(f"Optimise step takes: {mean(optimisation_times)}")
         #    bar.next()
 
         # if batch % 100 == 0:
@@ -285,15 +385,21 @@ def train_loop(dataloader, model, loss_fn, optimizer):
         #     print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
         #     #print(f"Pred = {pred}")
 
-        pred_times.append(t_after_pred - t_before_pred)
-        optimisation_times.append(t_after_optimisation - t_before_optimisation )
+        #pred_times.append(t_after_pred - t_before_pred)
+        #optimisation_times.append(t_after_optimisation - t_before_optimisation )
 
-    return train_batch_loss_history, train_batch_accuracy_history, mean(pred_times), mean(optimisation_times)
+        t_end = time.time()
+        print("")
+        batch_times.append(t_end - t_start)
+        print(f"One batch takes: {mean(batch_times)}")
+        first_batch=False
+
+    return train_batch_loss_history, train_batch_accuracy_history#, mean(pred_times), mean(optimisation_times)
 
 def test_loop(dataloader, model, loss_fn):
     test_batch_loss_history = []
     test_batch_accuracy_history = []
-    test_append_times = []
+    #test_append_times = []
 
     with torch.no_grad():
         loop = tqdm(dataloader)
@@ -302,15 +408,15 @@ def test_loop(dataloader, model, loss_fn):
             #make prediction using model
             sample['prediction'] = model(sample['X'])
             
-            t_array_start = time.time()
+            #t_array_start = time.time()
             #calculate batch loss and accuracy, store in history arrays 
             test_batch_loss_history.append(loss_fn(sample['prediction'], sample['y']).item())
             test_batch_accuracy_history.append((torch.argmax(sample['prediction'],1) == torch.argmax(sample['y'],1)).float().mean().item())
-            t_array_end = time.time()
+            #t_array_end = time.time()
 
-            test_append_times.append(t_array_end - t_array_start)
+            #test_append_times.append(t_array_end - t_array_start)
 
-    return test_batch_loss_history, test_batch_accuracy_history, mean(test_append_times) 
+    return test_batch_loss_history, test_batch_accuracy_history#, mean(test_append_times) 
 
 
 train_epoch_loss_history = []
@@ -325,26 +431,34 @@ predd_times = []
 train_times = []
 test_times = []
 
+
+
+trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+params = sum(p.numel() for p in model.parameters())
+print(f"Number of trainable network parameters: {trainable_params}")
+print(f"Number of network parameters: {params}")
+count_parameters(model)
+
 #iterate over the entire dataset n=n_epochs times
 for epoch in tqdm(range(n_epochs)):
-    train_start = time.time()
+    #train_start = time.time()
     model.train()
-    train_batch_loss_history, train_batch_accuracy_history, pred_time, optimisation_time = train_loop(train_dataloader, model, loss_fn, optimizer)
-    train_end = time.time()
+    train_batch_loss_history, train_batch_accuracy_history = train_loop(train_dataloader, model, loss_fn, optimizer)
+    #train_end = time.time()
 
-    test_start = time.time()
+    #test_start = time.time()
     model.eval()
-    test_batch_loss_history, test_batch_accuracy_history, test_append_time = test_loop(test_dataloader, model, loss_fn)
-    test_end = time.time()
+    test_batch_loss_history, test_batch_accuracy_history = test_loop(test_dataloader, model, loss_fn)
+    #test_end = time.time()
 
     train_epoch_loss_history.append(mean(train_batch_loss_history))
     train_epoch_accuracy_history.append(mean(train_batch_accuracy_history))
     test_epoch_loss_history.append(mean(test_batch_loss_history))
     test_epoch_accuracy_history.append(mean(test_batch_accuracy_history))
 
-    opt_times.append(optimisation_time)
-    predd_times.append(pred_time)
-    test_times.append(test_append_time)
+    #opt_times.append(optimisation_time)
+    #predd_times.append(pred_time)
+    #test_times.append(test_append_time)
 
     if test_epoch_accuracy_history[-1] > best_accuracy:
         best_accuracy = test_epoch_accuracy_history[-1]
@@ -365,7 +479,7 @@ print("-- Making predictions on dev set with the best model --")
 print("")
 
 
-final_pred_start_time = time.time()
+#final_pred_start_time = time.time()
 
 #make predictions using the best model weights
 loop = tqdm(test_dataloader)
@@ -381,7 +495,7 @@ for sample in loop:
     #update dataframe with model predictions - used for preprocessing
     test_data.add_prediction(sample)
 
-final_pred_stop_time = time.time()
+#final_pred_stop_time = time.time()
 
 print("-- Calculating accuracy and loss -- ")
 print("")
@@ -464,9 +578,9 @@ print("")
 
 et = time.time()
 
-print(f"Execution time: {(et-st)/60} minutes")
-print(f"Average optimisation time: {mean(opt_times)} seconds")
-print(f"Average prediction time: {mean(predd_times)} seconds")
-print(f"Average test appending time: {test_append_time} seconds")
-print(f"Time taken to make final prediction: {final_pred_stop_time - final_pred_start_time} seconds")
-print("")
+#print(f"Execution time: {(et-st)/60} minutes")
+#print(f"Average optimisation time: {mean(opt_times)} seconds")
+#print(f"Average prediction time: {mean(predd_times)} seconds")
+#print(f"Average test appending time: {test_append_time} seconds")
+#print(f"Time taken to make final prediction: {final_pred_stop_time - final_pred_start_time} seconds")
+#print("")
